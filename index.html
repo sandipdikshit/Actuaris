@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ARB — Autonomous Revenue Brain</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   GLOBAL TOKENS — APPLE PREMIUM SYSTEM
+═══════════════════════════════════════════ */
+:root {
+  --blue:       #0A84FF;
+  --blue-mid:   #0071E3;
+  --blue-deep:  #004EC2;
+  --teal:       #00C7BE;
+  --green:      #30D158;
+  --green-dark: #248A3D;
+  --orange:     #FF9F0A;
+  --red:        #FF453A;
+  --red-soft:   #FF6961;
+  --purple:     #BF5AF2;
+  --ink:        #1D1D1F;
+  --ink-2:      #3A3A3C;
+  --ink-3:      #636366;
+  --ink-4:      #8E8E93;
+  --fill-1:     rgba(120,120,128,0.16);
+  --fill-2:     rgba(120,120,128,0.10);
+  --fill-3:     rgba(120,120,128,0.06);
+  --bg:         #F5F5F7;
+  --surface:    #FFFFFF;
+  --surface-2:  #F2F2F7;
+  --border:     rgba(0,0,0,0.08);
+  --border-2:   rgba(0,0,0,0.05);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-xl:  0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── SCREEN SYSTEM ─── */
+.screen { display: none; min-height: 100vh; flex-direction: column; animation: fadeIn 0.35s ease; }
+.screen.active { display: flex; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* ─── CHROME / TOP BAR ─── */
+.chrome {
+  height: 52px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.chrome-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.logo-icon {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-deep));
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(10,132,255,0.35);
+}
+
+.chrome-nav {
+  display: flex;
+  gap: 2px;
+  margin-left: 16px;
+  background: var(--fill-2);
+  border-radius: 9px;
+  padding: 3px;
+}
+
+.nav-item {
+  padding: 5px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.nav-item:hover { color: var(--ink); background: rgba(255,255,255,0.7); }
+.nav-item.active { background: white; color: var(--ink); box-shadow: var(--shadow-sm); }
+
+.chrome-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(48,209,88,0.2);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 3px rgba(48,209,88,0.2); }
+  50% { box-shadow: 0 0 0 5px rgba(48,209,88,0.1); }
+}
+
+.chrome-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+.tag-live { background: rgba(48,209,88,0.12); color: var(--green-dark); border: 1px solid rgba(48,209,88,0.25); }
+.tag-system { background: rgba(10,132,255,0.1); color: var(--blue-mid); border: 1px solid rgba(10,132,255,0.2); }
+
+.avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5AC8FA, var(--blue));
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ─── JOURNEY PROGRESS ─── */
+.journey-bar {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.journey-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.journey-step:hover { background: var(--fill-3); }
+.journey-step.active { border-bottom-color: var(--blue); }
+
+.j-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--fill-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-4);
+}
+
+.journey-step.active .j-num { background: var(--blue); color: white; }
+.journey-step.done .j-num { background: var(--green); color: white; }
+
+.j-label { font-size: 13px; font-weight: 500; color: var(--ink-3); }
+.journey-step.active .j-label { color: var(--blue); font-weight: 600; }
+.journey-step.done .j-label { color: var(--green-dark); }
+
+.j-arrow { color: var(--fill-1); font-size: 11px; margin: 0 4px; }
+
+/* ─── MAIN CONTENT ─── */
+.content { flex: 1; padding: 32px; max-width: 1280px; margin: 0 auto; width: 100%; }
+.content-wide { flex: 1; padding: 32px; width: 100%; }
+
+/* ─── TYPOGRAPHY ─── */
+.page-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--blue);
+  margin-bottom: 6px;
+  font-family: 'DM Mono', monospace;
+}
+
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 34px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.page-title em { font-style: italic; color: var(--blue); }
+
+.page-sub {
+  font-size: 16px;
+  color: var(--ink-3);
+  font-weight: 400;
+  max-width: 600px;
+  line-height: 1.55;
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.card-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+.card-sub { font-size: 12px; color: var(--ink-4); margin-top: 1px; }
+
+.card-body { padding: 20px; }
+
+/* ─── METRIC CARDS ─── */
+.metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+
+.metric-card {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.metric-card.blue::before { background: var(--blue); }
+.metric-card.green::before { background: var(--green); }
+.metric-card.orange::before { background: var(--orange); }
+.metric-card.red::before { background: var(--red); }
+.metric-card.purple::before { background: var(--purple); }
+.metric-card.teal::before { background: var(--teal); }
+
+.metric-eyebrow { font-size: 11px; font-weight: 500; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.metric-value { font-size: 32px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+.metric-change { font-size: 12px; font-weight: 500; }
+.metric-change.up { color: var(--green-dark); }
+.metric-change.down { color: var(--red); }
+.metric-context { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+
+/* ─── GRIDS ─── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-70-30 { display: grid; grid-template-columns: 7fr 3fr; gap: 20px; }
+.grid-60-40 { display: grid; grid-template-columns: 6fr 4fr; gap: 20px; }
+.grid-40-60 { display: grid; grid-template-columns: 4fr 6fr; gap: 20px; }
+
+/* ─── CLAIM ROWS ─── */
+.claim-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-2);
+  transition: background 0.15s;
+}
+
+.claim-row:last-child { border-bottom: none; }
+.claim-row:hover { background: var(--fill-3); margin: 0 -20px; padding: 14px 20px; border-radius: 8px; }
+
+.claim-id { font-size: 12px; font-weight: 600; color: var(--ink); font-family: 'DM Mono', monospace; width: 90px; }
+.claim-patient { font-size: 13px; font-weight: 500; color: var(--ink-2); flex: 1; }
+.claim-payer { font-size: 12px; color: var(--ink-4); width: 110px; }
+.claim-amount { font-size: 14px; font-weight: 600; color: var(--ink); font-family: 'DM Mono', monospace; width: 80px; text-align: right; }
+
+.score-bar {
+  width: 80px;
+  height: 5px;
+  background: var(--fill-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.score-fill { height: 100%; border-radius: 3px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-green { background: rgba(48,209,88,0.12); color: var(--green-dark); }
+.badge-blue { background: rgba(10,132,255,0.1); color: var(--blue-mid); }
+.badge-orange { background: rgba(255,159,10,0.12); color: #B25000; }
+.badge-red { background: rgba(255,69,58,0.10); color: #C0392B; }
+.badge-purple { background: rgba(191,90,242,0.1); color: #7B2F8E; }
+.badge-gray { background: var(--fill-2); color: var(--ink-3); }
+.badge-teal { background: rgba(0,199,190,0.1); color: #007B75; }
+
+/* ─── PAYER ROUTING TABLE ─── */
+.routing-table { width: 100%; border-collapse: collapse; }
+
+.routing-table thead tr {
+  background: var(--surface-2);
+}
+
+.routing-table th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.routing-table td {
+  padding: 14px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-2);
+  color: var(--ink-2);
+}
+
+.routing-table tbody tr { transition: background 0.15s; }
+.routing-table tbody tr:hover { background: var(--fill-3); }
+
+.payer-name { font-weight: 600; color: var(--ink); }
+.payer-network { font-size: 11px; color: var(--ink-4); }
+
+.prob-bar {
+  width: 100px;
+  height: 6px;
+  background: var(--fill-2);
+  border-radius: 3px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.route-recommended {
+  background: rgba(48,209,88,0.05);
+}
+
+.route-recommended td { border-bottom-color: rgba(48,209,88,0.12); }
+
+.recommended-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--green);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ─── PROGRESS / STEP ITEMS ─── */
+.step-list { display: flex; flex-direction: column; gap: 12px; }
+
+.step-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.step-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.step-content { flex: 1; }
+.step-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.step-desc { font-size: 12px; color: var(--ink-4); line-height: 1.5; }
+
+/* ─── TIMELINE ─── */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+
+.tl-item {
+  display: flex;
+  gap: 14px;
+  padding-bottom: 20px;
+  position: relative;
+}
+
+.tl-item::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--border);
+}
+
+.tl-item:last-child::after { display: none; }
+
+.tl-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  z-index: 1;
+}
+
+.tl-body { flex: 1; padding-top: 4px; }
+.tl-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.tl-time { font-size: 11px; color: var(--ink-4); font-family: 'DM Mono', monospace; margin-bottom: 5px; }
+.tl-detail { font-size: 12px; color: var(--ink-3); line-height: 1.5; background: var(--surface-2); padding: 8px 12px; border-radius: 8px; }
+
+/* ─── DECISION CARD ─── */
+.decision-card {
+  background: linear-gradient(135deg, #EBF4FF 0%, #F0F7FF 100%);
+  border: 1.5px solid rgba(10,132,255,0.2);
+  border-radius: var(--r-lg);
+  padding: 24px;
+}
+
+.decision-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--blue);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(10,132,255,0.3);
+}
+
+.decision-reasoning {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+.reasoning-factors { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.factor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  box-shadow: var(--shadow-sm);
+}
+
+.factor-val { font-weight: 700; }
+.factor-val.pos { color: var(--green-dark); }
+.factor-val.neg { color: var(--red); }
+.factor-val.neu { color: var(--blue-mid); }
+
+/* ─── EXECUTION STAGES ─── */
+.exec-pipeline {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.exec-stage {
+  background: var(--surface);
+  padding: 20px 16px;
+  position: relative;
+}
+
+.exec-stage.done { background: rgba(48,209,88,0.04); }
+.exec-stage.active { background: rgba(10,132,255,0.04); }
+.exec-stage.pending { background: var(--surface); }
+
+.exec-stage-num { font-size: 11px; font-weight: 600; color: var(--ink-4); font-family: 'DM Mono', monospace; margin-bottom: 8px; }
+.exec-stage-icon { font-size: 22px; margin-bottom: 8px; }
+.exec-stage-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.exec-stage-status { font-size: 11px; }
+
+.status-done { color: var(--green-dark); font-weight: 600; }
+.status-active { color: var(--blue); font-weight: 600; }
+.status-pending { color: var(--ink-4); }
+
+.exec-stage.active::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--blue);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; }
+}
+
+/* ─── COMPLIANCE ─── */
+.audit-row {
+  display: flex;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border-2);
+  align-items: flex-start;
+}
+
+.audit-row:last-child { border-bottom: none; }
+
+.audit-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.audit-content { flex: 1; }
+.audit-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.audit-desc { font-size: 12px; color: var(--ink-4); line-height: 1.45; }
+.audit-meta { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--ink-4); margin-top: 3px; }
+
+/* ─── RISK METER ─── */
+.risk-meter {
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  padding: 20px;
+  text-align: center;
+}
+
+.risk-arc {
+  width: 120px; height: 60px;
+  margin: 0 auto 12px;
+  position: relative;
+}
+
+.risk-num { font-size: 36px; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
+.risk-label { font-size: 12px; color: var(--ink-4); font-weight: 500; }
+
+/* ─── LEARNING ─── */
+.model-card {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.model-name { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.model-version { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--ink-4); }
+
+.accuracy-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.accuracy-label { font-size: 12px; color: var(--ink-4); width: 120px; }
+.accuracy-bar { flex: 1; height: 6px; background: var(--fill-2); border-radius: 3px; overflow: hidden; }
+.accuracy-fill { height: 100%; border-radius: 3px; }
+.accuracy-val { font-size: 12px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--ink); width: 40px; text-align: right; }
+
+/* ─── SPARKLINE SIMULATION ─── */
+.sparkline-wrap { height: 50px; display: flex; align-items: flex-end; gap: 3px; }
+.spark-bar { flex: 1; border-radius: 2px 2px 0 0; transition: height 0.3s ease; }
+
+/* ─── SECTION LABEL ─── */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-4);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 2px 8px rgba(10,132,255,0.3);
+}
+.btn-primary:hover { background: var(--blue-deep); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(10,132,255,0.4); }
+
+.btn-secondary {
+  background: var(--fill-2);
+  color: var(--ink);
+}
+.btn-secondary:hover { background: var(--fill-1); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--blue);
+  padding: 9px 12px;
+}
+.btn-ghost:hover { background: rgba(10,132,255,0.06); }
+
+.btn-sm { padding: 6px 13px; font-size: 13px; }
+
+/* ─── MISC ─── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+.text-muted { color: var(--ink-4); }
+.text-sm { font-size: 12px; }
+.text-xs { font-size: 11px; }
+.mono { font-family: 'DM Mono', monospace; }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.gap-6 { gap: 6px; }
+.gap-10 { gap: 10px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-20 { gap: 20px; }
+.gap-24 { gap: 24px; }
+.mb-4 { margin-bottom: 4px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-24 { margin-bottom: 24px; }
+.mb-28 { margin-bottom: 28px; }
+.mt-auto { margin-top: auto; }
+.ml-auto { margin-left: auto; }
+.w-full { width: 100%; }
+
+.pill-counter {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--fill-2);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-4);
+}
+
+/* Live pulse badge */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(48,209,88,0.1);
+  border: 1px solid rgba(48,209,88,0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green-dark);
+}
+
+/* Nav next/prev */
+.nav-footer {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  bottom: 0;
+}
+
+.nav-context {
+  font-size: 12px;
+  color: var(--ink-4);
+  font-weight: 500;
+}
+
+/* Horizontal scroll */
+::-webkit-scrollbar { height: 4px; width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--fill-1); border-radius: 4px; }
+
+/* Inline chart bars */
+.mini-bars { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
+.mini-bar { border-radius: 2px 2px 0 0; }
+
+/* Hover card detail */
+.hover-expand {
+  font-size: 12px;
+  color: var(--ink-4);
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+/* Chip group */
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-block; padding: 4px 10px; background: var(--fill-2); border-radius: 6px; font-size: 11.5px; color: var(--ink-3); font-weight: 500; }
+
+/* ═══════ SCREEN-SPECIFIC ACCENTS ═══════ */
+.glow-card {
+  border: 1.5px solid rgba(10,132,255,0.2);
+  box-shadow: 0 0 0 4px rgba(10,132,255,0.04), var(--shadow-md);
+}
+
+/* inline status icons */
+.status-icon { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.si-green { background: var(--green); }
+.si-orange { background: var(--orange); }
+.si-red { background: var(--red); }
+.si-blue { background: var(--blue); }
+
+/* Appeal editor */
+.code-block {
+  background: #1C1C1E;
+  color: #98E4FF;
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.7;
+}
+
+.code-comment { color: #636366; }
+.code-key { color: #FF9F0A; }
+.code-val { color: #30D158; }
+.code-str { color: #FF6961; }
+
+/* ─── HERO INTRO ─── */
+.hero-intro {
+  background: linear-gradient(135deg, #0A0A1A 0%, #0D1B3E 50%, #0A1A2E 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(10,132,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10,132,255,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(10,132,255,0.15) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hero-content { position: relative; z-index: 1; text-align: center; padding: 40px; }
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10,132,255,0.15);
+  border: 1px solid rgba(10,132,255,0.3);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(10,132,255,0.9);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  animation: fadeIn 0.6s ease 0.2s both;
+}
+
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 72px;
+  font-weight: 400;
+  color: white;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 24px;
+  animation: fadeIn 0.6s ease 0.4s both;
+}
+
+.hero-title em { font-style: italic; color: #5AC8FA; }
+
+.hero-sub {
+  font-size: 20px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 300;
+  max-width: 580px;
+  margin: 0 auto 40px;
+  line-height: 1.6;
+  animation: fadeIn 0.6s ease 0.6s both;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--blue);
+  color: white;
+  padding: 14px 32px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 24px rgba(10,132,255,0.4);
+  animation: fadeIn 0.6s ease 0.8s both;
+  transition: all 0.2s ease;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(10,132,255,0.5); }
+
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+  margin-top: 56px;
+  animation: fadeIn 0.6s ease 1s both;
+}
+
+.hero-stat-val {
+  font-size: 40px;
+  font-weight: 700;
+  color: white;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: -0.03em;
+}
+
+.hero-stat-label { font-size: 13px; color: rgba(255,255,255,0.35); font-weight: 400; margin-top: 4px; }
+.hero-stat-sep { width: 1px; background: rgba(255,255,255,0.1); }
+
+</style>
+</head>
+<body>
+
+<!-- ╔═══════════════════════════════════════════
+     SCREEN 0: HERO / INTRO
+═══════════════════════════════════════════╗ -->
+<div id="s0" class="screen active">
+  <div class="hero-intro" onclick="goTo(1)">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="status-dot"></span>
+        Autonomous Revenue Optimization Infrastructure
+      </div>
+      <h1 class="hero-title">The Revenue<br><em>Brain</em> is Live</h1>
+      <p class="hero-sub">The first fully autonomous payer routing &amp; claims execution engine in healthcare — no human in the loop, no revenue left on the table.</p>
+      <button class="hero-cta" onclick="goTo(1)">
+        <i class="fas fa-play" style="font-size:12px;"></i>
+        Explore the Full Journey
+      </button>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-val">94.7%</div>
+          <div class="hero-stat-label">Clean claim rate</div>
+        </div>
+        <div class="hero-stat-sep"></div>
+        <div>
+          <div class="hero-stat-val">$2.4M</div>
+          <div class="hero-stat-label">Monthly revenue protected</div>
+        </div>
+        <div class="hero-stat-sep"></div>
+        <div>
+          <div class="hero-stat-val">61ms</div>
+          <div class="hero-stat-label">Avg routing decision</div>
+        </div>
+        <div class="hero-stat-sep"></div>
+        <div>
+          <div class="hero-stat-val">0</div>
+          <div class="hero-stat-label">Human touchpoints required</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════
+     SCREEN 1: COMMAND CENTER DASHBOARD
+═══════════════════════════════════════════╗ -->
+<div id="s1" class="screen">
+  <!-- Chrome -->
+  <div class="chrome">
+    <div class="chrome-logo">
+      <div class="logo-icon"><i class="fas fa-brain"></i></div>
+      ARB
+    </div>
+    <div class="chrome-nav">
+      <div class="nav-item active">Command Center</div>
+      <div class="nav-item" onclick="goTo(2)">Claim Ingestion</div>
+      <div class="nav-item" onclick="goTo(3)">Routing Engine</div>
+      <div class="nav-item" onclick="goTo(4)">Execution</div>
+      <div class="nav-item" onclick="goTo(5)">Compliance</div>
+      <div class="nav-item" onclick="goTo(6)">Learning Brain</div>
+    </div>
+    <div class="chrome-right">
+      <div class="status-dot"></div>
+      <span class="chrome-tag tag-live">Live Engine</span>
+      <span class="chrome-tag tag-system">v2.4.1</span>
+      <div class="avatar">SC</div>
+    </div>
+  </div>
+
+  <!-- Journey bar -->
+  <div class="journey-bar">
+    <div class="journey-step active"><div class="j-num">1</div><div class="j-label">Command Center</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(2)"><div class="j-num">2</div><div class="j-label">Claim Ingestion</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(3)"><div class="j-num">3</div><div class="j-label">Routing Decision</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(4)"><div class="j-num">4</div><div class="j-label">Execution Layer</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(5)"><div class="j-num">5</div><div class="j-label">Compliance Vault</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(6)"><div class="j-num">6</div><div class="j-label">Learning Brain</div></div>
+  </div>
+
+  <div class="content">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-24">
+      <div>
+        <div class="page-eyebrow">Command Center</div>
+        <h1 class="page-title">Revenue Intelligence <em>Dashboard</em></h1>
+        <p class="page-sub">All payer interactions, routing decisions and claim outcomes — unified in real time.</p>
+      </div>
+      <div class="flex gap-10 items-center">
+        <div class="live-badge"><span class="status-dot" style="width:5px;height:5px;"></span>247 claims processing now</div>
+        <button class="btn btn-secondary btn-sm"><i class="fas fa-sliders-h"></i> Configure</button>
+        <button class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Export</button>
+      </div>
+    </div>
+
+    <!-- Metric row -->
+    <div class="metric-grid">
+      <div class="metric-card blue">
+        <div class="metric-eyebrow">Net Revenue Protected</div>
+        <div class="metric-value">$2.41M</div>
+        <div class="metric-change up"><i class="fas fa-arrow-up" style="font-size:9px;"></i> +12.4% vs last month</div>
+        <div class="metric-context">MTD across 3 facilities</div>
+      </div>
+      <div class="metric-card green">
+        <div class="metric-eyebrow">Clean Claim Rate</div>
+        <div class="metric-value">94.7%</div>
+        <div class="metric-change up"><i class="fas fa-arrow-up" style="font-size:9px;"></i> +3.2pp since ARB launch</div>
+        <div class="metric-context">Industry avg: 81.3%</div>
+      </div>
+      <div class="metric-card orange">
+        <div class="metric-eyebrow">Denial Prevention</div>
+        <div class="metric-value">1,847</div>
+        <div class="metric-change up"><i class="fas fa-arrow-up" style="font-size:9px;"></i> Auto-rerouted this week</div>
+        <div class="metric-context">$387K saved in appeals</div>
+      </div>
+      <div class="metric-card purple">
+        <div class="metric-eyebrow">Avg Routing Time</div>
+        <div class="metric-value">61ms</div>
+        <div class="metric-change up"><i class="fas fa-arrow-down" style="font-size:9px;"></i> Down from 4.2 days manual</div>
+        <div class="metric-context">Fully autonomous decisions</div>
+      </div>
+    </div>
+
+    <!-- Middle row -->
+    <div class="grid-70-30 mb-20">
+      <!-- Live claim feed -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(10,132,255,0.1);color:var(--blue);"><i class="fas fa-bolt"></i></div>
+          <div><div class="card-title">Live Claim Feed</div><div class="card-sub">Real-time ingestion · last updated 3s ago</div></div>
+          <div class="ml-auto flex gap-10">
+            <div class="badge badge-blue">247 active</div>
+            <button class="btn btn-ghost btn-sm" onclick="goTo(2)">View all <i class="fas fa-arrow-right" style="font-size:10px;"></i></button>
+          </div>
+        </div>
+        <div class="card-body" style="padding-top:8px;">
+          <div class="claim-row">
+            <div class="claim-id">CLM-8849</div>
+            <div class="claim-patient">Sarah K. · Knee Replacement (27447)</div>
+            <div class="claim-payer">Aetna PPO</div>
+            <div class="score-bar"><div class="score-fill" style="width:92%;background:var(--green);"></div></div>
+            <div class="claim-amount">$24,500</div>
+            <div class="badge badge-green">Routed ✓</div>
+          </div>
+          <div class="claim-row">
+            <div class="claim-id">CLM-8850</div>
+            <div class="claim-patient">James M. · Cardiac Cath (93458)</div>
+            <div class="claim-payer">BCBS Federal</div>
+            <div class="score-bar"><div class="score-fill" style="width:78%;background:var(--orange);"></div></div>
+            <div class="claim-amount">$18,200</div>
+            <div class="badge badge-orange">Auth Needed</div>
+          </div>
+          <div class="claim-row">
+            <div class="claim-id">CLM-8851</div>
+            <div class="claim-patient">Maria L. · MRI Brain (70553)</div>
+            <div class="claim-payer">United Health</div>
+            <div class="score-bar"><div class="score-fill" style="width:97%;background:var(--green);"></div></div>
+            <div class="claim-amount">$4,800</div>
+            <div class="badge badge-green">Auto-submitted</div>
+          </div>
+          <div class="claim-row">
+            <div class="claim-id">CLM-8852</div>
+            <div class="claim-patient">David R. · Spinal Fusion (22612)</div>
+            <div class="claim-payer">Cigna Medical</div>
+            <div class="score-bar"><div class="score-fill" style="width:41%;background:var(--red);"></div></div>
+            <div class="claim-amount">$62,000</div>
+            <div class="badge badge-red">Rerouting →</div>
+          </div>
+          <div class="claim-row">
+            <div class="claim-id">CLM-8853</div>
+            <div class="claim-patient">Amy C. · Hip Arthroplasty (27130)</div>
+            <div class="claim-payer">Medicare Adv.</div>
+            <div class="score-bar"><div class="score-fill" style="width:88%;background:var(--green);"></div></div>
+            <div class="claim-amount">$29,100</div>
+            <div class="badge badge-green">Routed ✓</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System pulse -->
+      <div class="flex flex-col gap-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(48,209,88,0.1);color:var(--green);"><i class="fas fa-heartbeat"></i></div>
+            <div><div class="card-title">System Pulse</div><div class="card-sub">Engine health</div></div>
+          </div>
+          <div class="card-body" style="padding-top:12px;">
+            <div class="flex justify-between items-center mb-12">
+              <span class="text-sm" style="color:var(--ink-3);">Routing Engine</span>
+              <div class="flex items-center gap-6"><span class="status-icon si-green"></span><span class="text-xs mono" style="color:var(--green-dark);">99.99% uptime</span></div>
+            </div>
+            <div class="flex justify-between items-center mb-12">
+              <span class="text-sm" style="color:var(--ink-3);">Payer API Feeds</span>
+              <div class="flex items-center gap-6"><span class="status-icon si-green"></span><span class="text-xs mono" style="color:var(--green-dark);">14/14 active</span></div>
+            </div>
+            <div class="flex justify-between items-center mb-12">
+              <span class="text-sm" style="color:var(--ink-3);">Auth Automator</span>
+              <div class="flex items-center gap-6"><span class="status-icon si-green"></span><span class="text-xs mono" style="color:var(--green-dark);">Nominal</span></div>
+            </div>
+            <div class="flex justify-between items-center mb-12">
+              <span class="text-sm" style="color:var(--ink-3);">ML Model Serving</span>
+              <div class="flex items-center gap-6"><span class="status-icon si-orange"></span><span class="text-xs mono" style="color:#B25000;">Retraining</span></div>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm" style="color:var(--ink-3);">Compliance Layer</span>
+              <div class="flex items-center gap-6"><span class="status-icon si-green"></span><span class="text-xs mono" style="color:var(--green-dark);">CMS sync OK</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(191,90,242,0.1);color:var(--purple);"><i class="fas fa-chart-bar"></i></div>
+            <div><div class="card-title">Today's Volume</div><div class="card-sub">Claims by hour</div></div>
+          </div>
+          <div class="card-body">
+            <div class="sparkline-wrap">
+              <div class="spark-bar" style="height:45%;background:rgba(10,132,255,0.3);"></div>
+              <div class="spark-bar" style="height:55%;background:rgba(10,132,255,0.35);"></div>
+              <div class="spark-bar" style="height:40%;background:rgba(10,132,255,0.3);"></div>
+              <div class="spark-bar" style="height:70%;background:rgba(10,132,255,0.4);"></div>
+              <div class="spark-bar" style="height:85%;background:rgba(10,132,255,0.5);"></div>
+              <div class="spark-bar" style="height:90%;background:rgba(10,132,255,0.6);"></div>
+              <div class="spark-bar" style="height:78%;background:rgba(10,132,255,0.5);"></div>
+              <div class="spark-bar" style="height:95%;background:var(--blue);"></div>
+              <div class="spark-bar" style="height:88%;background:rgba(10,132,255,0.7);"></div>
+              <div class="spark-bar" style="height:100%;background:var(--blue);"></div>
+              <div class="spark-bar" style="height:82%;background:rgba(10,132,255,0.6);"></div>
+              <div class="spark-bar" style="height:60%;background:rgba(10,132,255,0.4);"></div>
+            </div>
+            <div class="flex justify-between mt-8">
+              <span class="text-xs mono text-muted">6am</span>
+              <span class="text-xs mono text-muted">12pm</span>
+              <span class="text-xs mono text-muted">Now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <span class="nav-context">Step 1 of 6 — Command Center</span>
+    <button class="btn btn-primary" onclick="goTo(2)">Next: Claim Ingestion <i class="fas fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════
+     SCREEN 2: CLAIM INGESTION & AI SCORING
+═══════════════════════════════════════════╗ -->
+<div id="s2" class="screen">
+  <div class="chrome">
+    <div class="chrome-logo"><div class="logo-icon"><i class="fas fa-brain"></i></div>ARB</div>
+    <div class="chrome-nav">
+      <div class="nav-item" onclick="goTo(1)">Command Center</div>
+      <div class="nav-item active">Claim Ingestion</div>
+      <div class="nav-item" onclick="goTo(3)">Routing Engine</div>
+      <div class="nav-item" onclick="goTo(4)">Execution</div>
+      <div class="nav-item" onclick="goTo(5)">Compliance</div>
+      <div class="nav-item" onclick="goTo(6)">Learning Brain</div>
+    </div>
+    <div class="chrome-right">
+      <div class="status-dot"></div>
+      <span class="chrome-tag tag-live">Live Engine</span>
+      <div class="avatar">SC</div>
+    </div>
+  </div>
+
+  <div class="journey-bar">
+    <div class="journey-step done" onclick="goTo(1)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Command Center</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step active"><div class="j-num">2</div><div class="j-label">Claim Ingestion</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(3)"><div class="j-num">3</div><div class="j-label">Routing Decision</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(4)"><div class="j-num">4</div><div class="j-label">Execution Layer</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(5)"><div class="j-num">5</div><div class="j-label">Compliance Vault</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(6)"><div class="j-num">6</div><div class="j-label">Learning Brain</div></div>
+  </div>
+
+  <div class="content">
+    <div class="flex items-center justify-between mb-24">
+      <div>
+        <div class="page-eyebrow">Step 2 — Ingestion &amp; Analysis</div>
+        <h1 class="page-title">Claim <em>Arrives.</em><br>AI Scores in 61ms.</h1>
+        <p class="page-sub">Every claim is automatically ingested, enriched with 180+ payer signals, and scored for denial risk before a human even knows it exists.</p>
+      </div>
+      <div class="flex gap-10 items-center">
+        <div class="live-badge"><span class="status-dot" style="width:5px;height:5px;"></span>Ingesting claim CLM-8852</div>
+      </div>
+    </div>
+
+    <div class="grid-60-40 mb-20">
+      <!-- Claim detail card -->
+      <div class="flex flex-col gap-16">
+        <div class="card glow-card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(10,132,255,0.1);color:var(--blue);"><i class="fas fa-file-medical"></i></div>
+            <div><div class="card-title">Claim CLM-8852 — Ingested</div><div class="card-sub">Received 09:41:22 AM · EHR API · Northside Medical Center</div></div>
+            <div class="badge badge-orange ml-auto">High Risk Score</div>
+          </div>
+          <div class="card-body">
+            <div class="grid-2 mb-16">
+              <div>
+                <div class="text-xs text-muted mb-4">Patient</div>
+                <div style="font-size:14px;font-weight:600;color:var(--ink);">David R. · M/54</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted mb-4">Procedure</div>
+                <div style="font-size:14px;font-weight:600;color:var(--ink);">Spinal Fusion L4-L5 (22612)</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted mb-4">Payer on File</div>
+                <div style="font-size:14px;font-weight:600;color:var(--ink);">Cigna Medical — PPO</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted mb-4">Claim Value</div>
+                <div style="font-size:14px;font-weight:700;color:var(--ink);">$62,000</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted mb-4">Facility</div>
+                <div style="font-size:14px;font-weight:600;color:var(--ink);">Northside Med · NPI 1234567890</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted mb-4">Diagnosis</div>
+                <div style="font-size:14px;font-weight:600;color:var(--ink);">M47.816 · Spondylosis w/ radiculopathy</div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section-label">AI Signal Enrichment — 180 Features Extracted</div>
+
+            <div class="step-list">
+              <div class="step-item">
+                <div class="step-icon" style="background:rgba(10,132,255,0.1);"><span style="font-size:14px;">🧠</span></div>
+                <div class="step-content">
+                  <div class="step-title">Payer History Analysis</div>
+                  <div class="step-desc">Cigna denied 68% of spinal fusion claims (22612) in past 90 days at this ZIP. Authorization approval rate: 31%. <strong style="color:var(--red);">High denial probability.</strong></div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-icon" style="background:rgba(255,159,10,0.1);"><span style="font-size:14px;">📋</span></div>
+                <div class="step-content">
+                  <div class="step-title">Coding Verification</div>
+                  <div class="step-desc">CPT 22612 requires modifier -62 for co-surgeon billing. <strong style="color:var(--orange);">Missing modifier detected.</strong> Auto-correction queued.</div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-icon" style="background:rgba(48,209,88,0.1);"><span style="font-size:14px;">🔍</span></div>
+                <div class="step-content">
+                  <div class="step-title">Alternative Network Scan</div>
+                  <div class="step-desc">Patient's secondary: Aetna PPO. Aetna approval rate for 22612: 84%. Expected reimbursement via Aetna: $54,200 vs. Cigna net $31,800. <strong style="color:var(--green-dark);">Reroute signal strong.</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk scoring panel -->
+      <div class="flex flex-col gap-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(255,69,58,0.1);color:var(--red);"><i class="fas fa-shield-virus"></i></div>
+            <div><div class="card-title">Denial Risk Score</div><div class="card-sub">Multi-model ensemble</div></div>
+          </div>
+          <div class="card-body" style="text-align:center;padding:24px 20px;">
+            <div style="position:relative;width:130px;height:130px;margin:0 auto 16px;">
+              <svg viewBox="0 0 130 130" style="width:100%;height:100%;transform:rotate(-90deg);">
+                <circle cx="65" cy="65" r="55" fill="none" stroke="var(--fill-2)" stroke-width="12"/>
+                <circle cx="65" cy="65" r="55" fill="none" stroke="var(--red)" stroke-width="12"
+                  stroke-dasharray="346" stroke-dashoffset="208" stroke-linecap="round"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <span style="font-size:36px;font-weight:800;color:var(--red);font-family:'DM Mono',monospace;line-height:1;">79</span>
+                <span style="font-size:11px;color:var(--ink-4);font-weight:500;">/ 100</span>
+              </div>
+            </div>
+            <div style="font-size:16px;font-weight:700;color:var(--red);margin-bottom:4px;">HIGH RISK</div>
+            <div style="font-size:12px;color:var(--ink-4);">79th percentile denial probability<br>for this payer + procedure combination</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(0,199,190,0.1);color:var(--teal);"><i class="fas fa-sitemap"></i></div>
+            <div><div class="card-title">Risk Factor Breakdown</div><div class="card-sub">Weighted contributions</div></div>
+          </div>
+          <div class="card-body">
+            <div class="accuracy-row">
+              <span class="accuracy-label">Payer denial pattern</span>
+              <div class="accuracy-bar"><div class="accuracy-fill" style="width:88%;background:var(--red);"></div></div>
+              <span class="accuracy-val" style="color:var(--red);">+38</span>
+            </div>
+            <div class="accuracy-row">
+              <span class="accuracy-label">Missing modifier</span>
+              <div class="accuracy-bar"><div class="accuracy-fill" style="width:62%;background:var(--orange);"></div></div>
+              <span class="accuracy-val" style="color:var(--orange);">+21</span>
+            </div>
+            <div class="accuracy-row">
+              <span class="accuracy-label">Auth complexity</span>
+              <div class="accuracy-bar"><div class="accuracy-fill" style="width:45%;background:var(--orange);"></div></div>
+              <span class="accuracy-val" style="color:var(--orange);">+14</span>
+            </div>
+            <div class="accuracy-row">
+              <span class="accuracy-label">Claim value ($62K)</span>
+              <div class="accuracy-bar"><div class="accuracy-fill" style="width:28%;background:var(--purple);"></div></div>
+              <span class="accuracy-val" style="color:var(--purple);">+6</span>
+            </div>
+            <div style="margin-top:14px;padding:10px 12px;background:rgba(10,132,255,0.06);border:1px solid rgba(10,132,255,0.15);border-radius:8px;">
+              <div style="font-size:12px;font-weight:600;color:var(--blue-mid);">→ Routing Engine triggered</div>
+              <div style="font-size:11px;color:var(--ink-4);margin-top:2px;">Score ≥ 60 triggers autonomous rerouting evaluation</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="goTo(1)"><i class="fas fa-arrow-left"></i> Back</button>
+    <span class="nav-context">Step 2 of 6 — Claim Ingestion &amp; AI Scoring</span>
+    <button class="btn btn-primary" onclick="goTo(3)">Next: Routing Engine <i class="fas fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════
+     SCREEN 3: DYNAMIC PAYER ROUTING ENGINE
+═══════════════════════════════════════════╗ -->
+<div id="s3" class="screen">
+  <div class="chrome">
+    <div class="chrome-logo"><div class="logo-icon"><i class="fas fa-brain"></i></div>ARB</div>
+    <div class="chrome-nav">
+      <div class="nav-item" onclick="goTo(1)">Command Center</div>
+      <div class="nav-item" onclick="goTo(2)">Claim Ingestion</div>
+      <div class="nav-item active">Routing Engine</div>
+      <div class="nav-item" onclick="goTo(4)">Execution</div>
+      <div class="nav-item" onclick="goTo(5)">Compliance</div>
+      <div class="nav-item" onclick="goTo(6)">Learning Brain</div>
+    </div>
+    <div class="chrome-right">
+      <div class="status-dot"></div>
+      <span class="chrome-tag tag-live">Live Engine</span>
+      <div class="avatar">SC</div>
+    </div>
+  </div>
+
+  <div class="journey-bar">
+    <div class="journey-step done" onclick="goTo(1)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Command Center</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(2)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Claim Ingestion</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step active"><div class="j-num">3</div><div class="j-label">Routing Decision</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(4)"><div class="j-num">4</div><div class="j-label">Execution Layer</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(5)"><div class="j-num">5</div><div class="j-label">Compliance Vault</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(6)"><div class="j-num">6</div><div class="j-label">Learning Brain</div></div>
+  </div>
+
+  <div class="content">
+    <div class="flex items-center justify-between mb-24">
+      <div>
+        <div class="page-eyebrow">Step 3 — Routing Decision</div>
+        <h1 class="page-title">The Engine <em>Decides.</em><br>In 61 milliseconds.</h1>
+        <p class="page-sub">ARB evaluates every available payer path, network contract, auth likelihood and net reimbursement — then routes without human input.</p>
+      </div>
+      <div class="badge badge-blue" style="font-size:13px;padding:8px 16px;">CLM-8852 · $62,000 Spinal Fusion</div>
+    </div>
+
+    <!-- Decision card -->
+    <div class="decision-card mb-20">
+      <div class="decision-pill"><i class="fas fa-robot" style="font-size:11px;"></i>ARB Decision — Autonomous</div>
+      <div style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.02em;margin-bottom:12px;">
+        Route to <span style="color:var(--blue);">Aetna PPO</span> via secondary eligibility.<br>
+        Expected net reimbursement: <span style="color:var(--green-dark);">$54,200</span> vs. $31,800 via Cigna.
+      </div>
+      <div class="decision-reasoning">
+        Cigna's rolling 90-day denial rate for CPT 22612 at this facility is <strong>68%</strong>. Patient's secondary payer (Aetna PPO) shows an 84% approval rate for the same procedure with an average reimbursement of $54,200 net — a <strong>$22,400 improvement</strong>. ARB will auto-initiate authorization packaging via Aetna's portal, apply modifier -62 correction, and submit within the current billing window.
+      </div>
+      <div class="reasoning-factors">
+        <div class="factor-chip"><span>Aetna approval prob.</span><span class="factor-val pos">84%</span></div>
+        <div class="factor-chip"><span>Cigna approval prob.</span><span class="factor-val neg">31%</span></div>
+        <div class="factor-chip"><span>Net rev. uplift</span><span class="factor-val pos">+$22,400</span></div>
+        <div class="factor-chip"><span>Auth complexity</span><span class="factor-val neu">Medium</span></div>
+        <div class="factor-chip"><span>Prior auth success</span><span class="factor-val pos">Aetna: 91%</span></div>
+        <div class="factor-chip"><span>Contract rate</span><span class="factor-val pos">In-network ✓</span></div>
+        <div class="factor-chip"><span>Coding fix</span><span class="factor-val neu">Modifier -62 applied</span></div>
+        <div class="factor-chip"><span>Billing window</span><span class="factor-val pos">32 days remaining</span></div>
+      </div>
+    </div>
+
+    <!-- Routing comparison table -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(10,132,255,0.1);color:var(--blue);"><i class="fas fa-network-wired"></i></div>
+        <div><div class="card-title">Payer Network Comparison Matrix</div><div class="card-sub">All available pathways evaluated · real-time contract data</div></div>
+      </div>
+      <div style="padding:0 0 16px;">
+        <table class="routing-table">
+          <thead>
+            <tr>
+              <th>Payer / Network</th>
+              <th>Approval Probability</th>
+              <th>Contract Rate</th>
+              <th>Expected Net Rev.</th>
+              <th>Auth Path</th>
+              <th>Avg Days to Pay</th>
+              <th>Risk Score</th>
+              <th>Decision</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="route-recommended">
+              <td><div class="payer-name">Aetna PPO</div><div class="payer-network">Secondary · In-Network</div></td>
+              <td>
+                <div class="flex items-center gap-8">
+                  <div class="prob-bar"><div style="width:84%;height:100%;background:var(--green);border-radius:3px;"></div></div>
+                  <span class="mono" style="color:var(--green-dark);font-weight:600;">84%</span>
+                </div>
+              </td>
+              <td><span class="mono">$58,400</span></td>
+              <td><span class="mono" style="font-weight:700;color:var(--green-dark);">$54,200</span></td>
+              <td><span class="badge badge-teal">Auto Auth</span></td>
+              <td><span class="mono">18 days</span></td>
+              <td><div class="badge badge-green">Low · 21</div></td>
+              <td><div class="recommended-chip"><i class="fas fa-check" style="font-size:9px;"></i>SELECTED</div></td>
+            </tr>
+            <tr>
+              <td><div class="payer-name">Cigna Medical</div><div class="payer-network">Primary · In-Network</div></td>
+              <td>
+                <div class="flex items-center gap-8">
+                  <div class="prob-bar"><div style="width:31%;height:100%;background:var(--red);border-radius:3px;"></div></div>
+                  <span class="mono" style="color:var(--red);font-weight:600;">31%</span>
+                </div>
+              </td>
+              <td><span class="mono">$44,000</span></td>
+              <td><span class="mono" style="color:var(--red);">$31,800</span></td>
+              <td><span class="badge badge-red">Manual Auth</span></td>
+              <td><span class="mono">42 days</span></td>
+              <td><div class="badge badge-red">High · 79</div></td>
+              <td><div class="badge badge-gray">Bypassed</div></td>
+            </tr>
+            <tr>
+              <td><div class="payer-name">United Health</div><div class="payer-network">Out-of-Network Option</div></td>
+              <td>
+                <div class="flex items-center gap-8">
+                  <div class="prob-bar"><div style="width:55%;height:100%;background:var(--orange);border-radius:3px;"></div></div>
+                  <span class="mono" style="color:#B25000;font-weight:600;">55%</span>
+                </div>
+              </td>
+              <td><span class="mono">$36,000</span></td>
+              <td><span class="mono" style="color:var(--ink-3);">$28,400</span></td>
+              <td><span class="badge badge-orange">Complex Auth</span></td>
+              <td><span class="mono">55 days</span></td>
+              <td><div class="badge badge-orange">Med · 54</div></td>
+              <td><div class="badge badge-gray">Not optimal</div></td>
+            </tr>
+            <tr>
+              <td><div class="payer-name">Medicare Advantage</div><div class="payer-network">Tertiary · GAP option</div></td>
+              <td>
+                <div class="flex items-center gap-8">
+                  <div class="prob-bar"><div style="width:71%;height:100%;background:var(--blue);border-radius:3px;"></div></div>
+                  <span class="mono" style="color:var(--blue-mid);font-weight:600;">71%</span>
+                </div>
+              </td>
+              <td><span class="mono">$40,200</span></td>
+              <td><span class="mono" style="color:var(--ink-3);">$34,100</span></td>
+              <td><span class="badge badge-blue">Semi-Auto</span></td>
+              <td><span class="mono">28 days</span></td>
+              <td><div class="badge badge-blue">Med · 38</div></td>
+              <td><div class="badge badge-gray">Fallback</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="goTo(2)"><i class="fas fa-arrow-left"></i> Back</button>
+    <span class="nav-context">Step 3 of 6 — Dynamic Payer Routing</span>
+    <button class="btn btn-primary" onclick="goTo(4)">Next: Execution Layer <i class="fas fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════
+     SCREEN 4: EXECUTION LAYER
+═══════════════════════════════════════════╗ -->
+<div id="s4" class="screen">
+  <div class="chrome">
+    <div class="chrome-logo"><div class="logo-icon"><i class="fas fa-brain"></i></div>ARB</div>
+    <div class="chrome-nav">
+      <div class="nav-item" onclick="goTo(1)">Command Center</div>
+      <div class="nav-item" onclick="goTo(2)">Claim Ingestion</div>
+      <div class="nav-item" onclick="goTo(3)">Routing Engine</div>
+      <div class="nav-item active">Execution</div>
+      <div class="nav-item" onclick="goTo(5)">Compliance</div>
+      <div class="nav-item" onclick="goTo(6)">Learning Brain</div>
+    </div>
+    <div class="chrome-right">
+      <div class="status-dot"></div>
+      <span class="chrome-tag tag-live">Live Engine</span>
+      <div class="avatar">SC</div>
+    </div>
+  </div>
+
+  <div class="journey-bar">
+    <div class="journey-step done" onclick="goTo(1)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Command Center</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(2)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Claim Ingestion</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(3)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Routing Decision</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step active"><div class="j-num">4</div><div class="j-label">Execution Layer</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(5)"><div class="j-num">5</div><div class="j-label">Compliance Vault</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(6)"><div class="j-num">6</div><div class="j-label">Learning Brain</div></div>
+  </div>
+
+  <div class="content">
+    <div class="flex items-center justify-between mb-20">
+      <div>
+        <div class="page-eyebrow">Step 4 — Execution Layer</div>
+        <h1 class="page-title">ARB <em>Acts.</em><br>No human click required.</h1>
+        <p class="page-sub">From routing decision to claim submission, auth packaging, coding correction, and appeal drafting — fully autonomous execution.</p>
+      </div>
+      <div class="flex gap-10">
+        <div class="badge badge-orange" style="font-size:12px;padding:6px 14px;"><i class="fas fa-spinner fa-spin" style="font-size:10px;"></i> Executing CLM-8852</div>
+      </div>
+    </div>
+
+    <!-- Execution pipeline -->
+    <div class="exec-pipeline mb-24">
+      <div class="exec-stage done">
+        <div class="exec-stage-num">01</div>
+        <div class="exec-stage-icon">✅</div>
+        <div class="exec-stage-title">Coding Adjustment</div>
+        <div class="exec-stage-status status-done">Complete · 0.2s</div>
+      </div>
+      <div class="exec-stage done">
+        <div class="exec-stage-num">02</div>
+        <div class="exec-stage-icon">✅</div>
+        <div class="exec-stage-title">Auth Packaging</div>
+        <div class="exec-stage-status status-done">Complete · 1.4s</div>
+      </div>
+      <div class="exec-stage active">
+        <div class="exec-stage-num">03</div>
+        <div class="exec-stage-icon">⚡</div>
+        <div class="exec-stage-title">Auto Submission</div>
+        <div class="exec-stage-status status-active">In progress…</div>
+      </div>
+      <div class="exec-stage pending">
+        <div class="exec-stage-num">04</div>
+        <div class="exec-stage-icon">⏳</div>
+        <div class="exec-stage-title">Appeal Ready</div>
+        <div class="exec-stage-status status-pending">Standby if denied</div>
+      </div>
+      <div class="exec-stage pending">
+        <div class="exec-stage-num">05</div>
+        <div class="exec-stage-icon">📊</div>
+        <div class="exec-stage-title">Outcome Monitor</div>
+        <div class="exec-stage-status status-pending">Awaiting payer resp.</div>
+      </div>
+    </div>
+
+    <div class="grid-3 mb-20">
+      <!-- Coding adjustment detail -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(48,209,88,0.1);color:var(--green);"><i class="fas fa-code"></i></div>
+          <div><div class="card-title">Coding Correction</div><div class="card-sub">Auto-applied</div></div>
+          <div class="badge badge-green ml-auto">Done</div>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:12px;">
+            <div class="text-xs text-muted mb-4">Original Submission</div>
+            <div class="code-block">
+              <span class="code-comment">// Before ARB correction</span><br>
+              <span class="code-key">CPT:</span> <span class="code-str">"22612"</span><br>
+              <span class="code-key">Modifier:</span> <span class="code-str">null</span><br>
+              <span class="code-key">Dx:</span> <span class="code-val">"M47.816"</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs text-muted mb-4">ARB Corrected</div>
+            <div class="code-block" style="border:1px solid rgba(48,209,88,0.2);">
+              <span class="code-comment">// After ARB correction</span><br>
+              <span class="code-key">CPT:</span> <span class="code-str">"22612"</span><br>
+              <span class="code-key">Modifier:</span> <span class="code-val">"-62"</span> ✓<br>
+              <span class="code-key">Dx:</span> <span class="code-val">"M47.816"</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--green-dark);font-weight:500;background:rgba(48,209,88,0.06);padding:8px 10px;border-radius:8px;">
+            Est. revenue impact: <strong>+$4,200</strong> from modifier compliance
+          </div>
+        </div>
+      </div>
+
+      <!-- Auth packaging -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(48,209,88,0.1);color:var(--green);"><i class="fas fa-lock-open"></i></div>
+          <div><div class="card-title">Prior Auth Package</div><div class="card-sub">Auto-built for Aetna</div></div>
+          <div class="badge badge-green ml-auto">Done</div>
+        </div>
+        <div class="card-body">
+          <div class="step-list">
+            <div class="step-item">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(48,209,88,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">✓</div>
+              <div class="step-content"><div style="font-size:12px;font-weight:600;color:var(--ink);">Clinical documentation extracted</div><div style="font-size:11px;color:var(--ink-4);">14 pages from EHR pulled automatically</div></div>
+            </div>
+            <div class="step-item">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(48,209,88,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">✓</div>
+              <div class="step-content"><div style="font-size:12px;font-weight:600;color:var(--ink);">Aetna-specific form populated</div><div style="font-size:11px;color:var(--ink-4);">Auth form AET-PA-2024-v3 completed</div></div>
+            </div>
+            <div class="step-item">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(48,209,88,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">✓</div>
+              <div class="step-content"><div style="font-size:12px;font-weight:600;color:var(--ink);">Medical necessity criteria met</div><div style="font-size:11px;color:var(--ink-4);">Aetna policy MP.016 — 3/3 criteria matched</div></div>
+            </div>
+            <div class="step-item">
+              <div style="width:22px;height:22px;border-radius:6px;background:rgba(48,209,88,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">✓</div>
+              <div class="step-content"><div style="font-size:12px;font-weight:600;color:var(--ink);">Submitted via Aetna API</div><div style="font-size:11px;color:var(--ink-4);">Ref #ATN-PA-20241102-8849</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appeal drafting standby -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(191,90,242,0.1);color:var(--purple);"><i class="fas fa-pen-nib"></i></div>
+          <div><div class="card-title">Appeal Draft — Standby</div><div class="card-sub">Pre-built if denied</div></div>
+          <div class="badge badge-purple ml-auto">Ready</div>
+        </div>
+        <div class="card-body">
+          <div style="padding:14px;background:var(--surface-2);border-radius:10px;border:1px dashed var(--border);margin-bottom:12px;">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-4);margin-bottom:8px;">Auto-drafted Level 1 Appeal</div>
+            <div style="font-size:12px;color:var(--ink-3);line-height:1.6;">
+              "…The denial of CPT 22612 is not consistent with [Payer] clinical policy CP-2024-22612. The patient presented with M47.816 with confirmed radiculopathy on MRI dated [Date], conservative treatment failure documented over 12 weeks…"
+            </div>
+          </div>
+          <div class="chip-group">
+            <div class="chip">ICD-10 evidence</div>
+            <div class="chip">MRI documentation</div>
+            <div class="chip">Conservative tx failure</div>
+            <div class="chip">Peer-reviewed citations</div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--purple);font-weight:500;background:rgba(191,90,242,0.06);padding:8px 10px;border-radius:8px;">
+            Historical appeal win rate for this strategy: <strong>73%</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="goTo(3)"><i class="fas fa-arrow-left"></i> Back</button>
+    <span class="nav-context">Step 4 of 6 — Execution Layer</span>
+    <button class="btn btn-primary" onclick="goTo(5)">Next: Compliance Vault <i class="fas fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════
+     SCREEN 5: COMPLIANCE VAULT
+═══════════════════════════════════════════╗ -->
+<div id="s5" class="screen">
+  <div class="chrome">
+    <div class="chrome-logo"><div class="logo-icon"><i class="fas fa-brain"></i></div>ARB</div>
+    <div class="chrome-nav">
+      <div class="nav-item" onclick="goTo(1)">Command Center</div>
+      <div class="nav-item" onclick="goTo(2)">Claim Ingestion</div>
+      <div class="nav-item" onclick="goTo(3)">Routing Engine</div>
+      <div class="nav-item" onclick="goTo(4)">Execution</div>
+      <div class="nav-item active">Compliance</div>
+      <div class="nav-item" onclick="goTo(6)">Learning Brain</div>
+    </div>
+    <div class="chrome-right">
+      <div class="status-dot"></div>
+      <span class="chrome-tag tag-live">Live Engine</span>
+      <div class="avatar">SC</div>
+    </div>
+  </div>
+
+  <div class="journey-bar">
+    <div class="journey-step done" onclick="goTo(1)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Command Center</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(2)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Claim Ingestion</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(3)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Routing Decision</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(4)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Execution Layer</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step active"><div class="j-num">5</div><div class="j-label">Compliance Vault</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step" onclick="goTo(6)"><div class="j-num">6</div><div class="j-label">Learning Brain</div></div>
+  </div>
+
+  <div class="content">
+    <div class="flex items-center justify-between mb-24">
+      <div>
+        <div class="page-eyebrow">Step 5 — Compliance &amp; Audit</div>
+        <h1 class="page-title">Every Decision is<br><em>Explainable.</em> Always.</h1>
+        <p class="page-sub">Full audit trail, CMS policy overlays, explainable AI decision trees, and immutable logs — built for regulatory scrutiny.</p>
+      </div>
+      <div class="flex gap-10">
+        <div class="badge badge-green" style="font-size:12px;padding:6px 14px;"><i class="fas fa-shield-check" style="font-size:10px;"></i> CMS Compliant</div>
+        <div class="badge badge-blue" style="font-size:12px;padding:6px 14px;">HIPAA Audit Ready</div>
+      </div>
+    </div>
+
+    <div class="grid-2 mb-20">
+      <!-- Audit trail -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(10,132,255,0.1);color:var(--blue);"><i class="fas fa-receipt"></i></div>
+          <div><div class="card-title">Immutable Audit Trail</div><div class="card-sub">CLM-8852 · All actions logged with hash</div></div>
+          <div class="badge badge-teal ml-auto">Tamper-proof</div>
+        </div>
+        <div class="card-body" style="padding-top:8px;">
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(10,132,255,0.1);"><span style="font-size:13px;">📥</span></div>
+              <div class="tl-body">
+                <div class="tl-title">Claim ingested from EHR</div>
+                <div class="tl-time">09:41:22.004 AM · Hash: a3f9c2b1</div>
+                <div class="tl-detail">Source: Northside EHR API · NPI 1234567890 · User context: system/ehr_sync · 0 human interactions</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(255,159,10,0.1);"><span style="font-size:13px;">🧠</span></div>
+              <div class="tl-body">
+                <div class="tl-title">AI risk scoring executed</div>
+                <div class="tl-time">09:41:22.065 AM · Hash: f7e1d088</div>
+                <div class="tl-detail">Model: ARB-Denial-v2.4 · Score: 79/100 · 180 features evaluated · No PII used in scoring</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(191,90,242,0.1);"><span style="font-size:13px;">🔀</span></div>
+              <div class="tl-body">
+                <div class="tl-title">Routing decision made — Aetna PPO selected</div>
+                <div class="tl-time">09:41:22.109 AM · Hash: c44b9ae3</div>
+                <div class="tl-detail">Decision engine v2.4.1 · 4 payers evaluated · Decision rationale stored in XAI record XAI-8852-001 · CMS anti-gaming rule overlay applied ✓</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(48,209,88,0.1);"><span style="font-size:13px;">✍️</span></div>
+              <div class="tl-body">
+                <div class="tl-title">Modifier -62 correction applied</div>
+                <div class="tl-time">09:41:22.312 AM · Hash: 0b33e1f9</div>
+                <div class="tl-detail">Coding rule: CMS-CPT-22612-MOD-2024 · Change documented · Original record preserved · Correction basis: AMA CPT guidelines 2024</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" style="background:rgba(48,209,88,0.1);"><span style="font-size:13px;">📤</span></div>
+              <div class="tl-body">
+                <div class="tl-title">Prior auth submitted to Aetna portal</div>
+                <div class="tl-time">09:41:23.701 AM · Hash: 8d77a340</div>
+                <div class="tl-detail">Aetna API response: ACK received · Auth ref: ATN-PA-20241102-8849 · Response time: 1.4s</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- XAI + Policy panel -->
+      <div class="flex flex-col gap-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(191,90,242,0.1);color:var(--purple);"><i class="fas fa-project-diagram"></i></div>
+            <div><div class="card-title">Explainable AI Record</div><div class="card-sub">Decision XAI-8852-001 · Why Aetna was chosen</div></div>
+          </div>
+          <div class="card-body">
+            <div class="audit-row">
+              <div class="audit-icon" style="background:rgba(10,132,255,0.1);">🔢</div>
+              <div class="audit-content">
+                <div class="audit-title">Primary Driver: Expected Value Differential</div>
+                <div class="audit-desc">Aetna net EV ($54,200 × 84% approval) = $45,528 vs. Cigna EV ($31,800 × 31%) = $9,858. Delta: <strong style="color:var(--green-dark);">$35,670</strong> in expected value favors Aetna route.</div>
+              </div>
+            </div>
+            <div class="audit-row">
+              <div class="audit-icon" style="background:rgba(255,159,10,0.1);">⚖️</div>
+              <div class="audit-content">
+                <div class="audit-title">Policy Overlay Check Passed</div>
+                <div class="audit-desc">CMS secondary billing rule 11.3.2 verified — secondary payer routing is compliant. No anti-gaming flags triggered. MSP rules applied.</div>
+              </div>
+            </div>
+            <div class="audit-row">
+              <div class="audit-icon" style="background:rgba(48,209,88,0.1);">✓</div>
+              <div class="audit-content">
+                <div class="audit-title">Counterfactual Documented</div>
+                <div class="audit-desc">If Aetna denies → fallback to Medicare Advantage ($34,100 expected). Appeal draft pre-staged for Level 1 external review.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(255,69,58,0.1);color:var(--red);"><i class="fas fa-gavel"></i></div>
+            <div><div class="card-title">CMS Policy Rule Overlay</div><div class="card-sub">Active guardrails</div></div>
+          </div>
+          <div class="card-body">
+            <div class="flex flex-col gap-10">
+              <div class="flex items-center justify-between">
+                <span style="font-size:12px;color:var(--ink-3);">Anti-upcoding check</span>
+                <div class="badge badge-green">Pass ✓</div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span style="font-size:12px;color:var(--ink-3);">MSP coordination rules</span>
+                <div class="badge badge-green">Pass ✓</div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span style="font-size:12px;color:var(--ink-3);">LCD/NCD applicability</span>
+                <div class="badge badge-green">Verified ✓</div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span style="font-size:12px;color:var(--ink-3);">Stark Law screen</span>
+                <div class="badge badge-green">No flags</div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span style="font-size:12px;color:var(--ink-3);">HIPAA minimum necessary</span>
+                <div class="badge badge-green">Compliant ✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="goTo(4)"><i class="fas fa-arrow-left"></i> Back</button>
+    <span class="nav-context">Step 5 of 6 — Compliance &amp; Audit</span>
+    <button class="btn btn-primary" onclick="goTo(6)">Next: Learning Brain <i class="fas fa-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════
+     SCREEN 6: LEARNING BRAIN
+═══════════════════════════════════════════╗ -->
+<div id="s6" class="screen">
+  <div class="chrome">
+    <div class="chrome-logo"><div class="logo-icon"><i class="fas fa-brain"></i></div>ARB</div>
+    <div class="chrome-nav">
+      <div class="nav-item" onclick="goTo(1)">Command Center</div>
+      <div class="nav-item" onclick="goTo(2)">Claim Ingestion</div>
+      <div class="nav-item" onclick="goTo(3)">Routing Engine</div>
+      <div class="nav-item" onclick="goTo(4)">Execution</div>
+      <div class="nav-item" onclick="goTo(5)">Compliance</div>
+      <div class="nav-item active">Learning Brain</div>
+    </div>
+    <div class="chrome-right">
+      <div class="status-dot"></div>
+      <span class="chrome-tag tag-live">Live Engine</span>
+      <div class="avatar">SC</div>
+    </div>
+  </div>
+
+  <div class="journey-bar">
+    <div class="journey-step done" onclick="goTo(1)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Command Center</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(2)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Claim Ingestion</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(3)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Routing Decision</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(4)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Execution Layer</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step done" onclick="goTo(5)"><div class="j-num"><i class="fas fa-check" style="font-size:8px;"></i></div><div class="j-label">Compliance Vault</div></div>
+    <div class="j-arrow"><i class="fas fa-chevron-right"></i></div>
+    <div class="journey-step active"><div class="j-num">6</div><div class="j-label">Learning Brain</div></div>
+  </div>
+
+  <div class="content">
+    <div class="flex items-center justify-between mb-24">
+      <div>
+        <div class="page-eyebrow">Step 6 — Feedback &amp; Learning</div>
+        <h1 class="page-title">The Moat:<br>ARB <em>Gets Smarter</em> Every Claim.</h1>
+        <p class="page-sub">Every outcome — paid, denied, appealed — feeds back into the model. Payer policy changes trigger instant recalibration. This is the compounding advantage.</p>
+      </div>
+      <div class="badge badge-orange" style="font-size:12px;padding:6px 14px;"><i class="fas fa-sync fa-spin" style="font-size:10px;"></i> Retraining on 14,847 new outcomes</div>
+    </div>
+
+    <div class="metric-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+      <div class="metric-card green">
+        <div class="metric-eyebrow">Model Accuracy</div>
+        <div class="metric-value">91.3%</div>
+        <div class="metric-change up"><i class="fas fa-arrow-up" style="font-size:9px;"></i> +2.1pp this month</div>
+        <div class="metric-context">Denial prediction accuracy</div>
+      </div>
+      <div class="metric-card blue">
+        <div class="metric-eyebrow">Policy Updates Ingested</div>
+        <div class="metric-value">247</div>
+        <div class="metric-change up">Auto-recalibrated this quarter</div>
+        <div class="metric-context">0 manual rule updates</div>
+      </div>
+      <div class="metric-card purple">
+        <div class="metric-eyebrow">Appeal Win Rate</div>
+        <div class="metric-value">73.4%</div>
+        <div class="metric-change up"><i class="fas fa-arrow-up" style="font-size:9px;"></i> +18pp since launch</div>
+        <div class="metric-context">Strategy learning from outcomes</div>
+      </div>
+    </div>
+
+    <div class="grid-60-40">
+      <!-- Feedback loop visual -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(191,90,242,0.1);color:var(--purple);"><i class="fas fa-sync-alt"></i></div>
+          <div><div class="card-title">Closed-Loop Learning Engine</div><div class="card-sub">Continuous model improvement from claim outcomes</div></div>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:8px;align-items:center;margin-bottom:20px;padding:16px;background:var(--surface-2);border-radius:12px;">
+            <div style="text-align:center;">
+              <div style="font-size:22px;margin-bottom:6px;">📥</div>
+              <div style="font-size:11px;font-weight:600;color:var(--ink-2);">Claim Outcome</div>
+              <div style="font-size:10px;color:var(--ink-4);">Paid/Denied/Appealed</div>
+            </div>
+            <div style="color:var(--blue);font-size:16px;">→</div>
+            <div style="text-align:center;">
+              <div style="font-size:22px;margin-bottom:6px;">🏷️</div>
+              <div style="font-size:11px;font-weight:600;color:var(--ink-2);">Label &amp; Feature</div>
+              <div style="font-size:10px;color:var(--ink-4);">Signal extraction</div>
+            </div>
+            <div style="color:var(--blue);font-size:16px;">→</div>
+            <div style="text-align:center;">
+              <div style="font-size:22px;margin-bottom:6px;">🧠</div>
+              <div style="font-size:11px;font-weight:600;color:var(--ink-2);">Model Retrain</div>
+              <div style="font-size:10px;color:var(--ink-4);">Nightly + event-driven</div>
+            </div>
+            <div style="color:var(--blue);font-size:16px;">→</div>
+            <div style="text-align:center;">
+              <div style="font-size:22px;margin-bottom:6px;">🔀</div>
+              <div style="font-size:11px;font-weight:600;color:var(--ink-2);">Strategy Update</div>
+              <div style="font-size:10px;color:var(--ink-4);">Routing recalibrated</div>
+            </div>
+          </div>
+
+          <div class="section-label">Recent Learning Events</div>
+          <div class="audit-row">
+            <div class="audit-icon" style="background:rgba(48,209,88,0.1);">📈</div>
+            <div class="audit-content">
+              <div class="audit-title">Cigna Spinal Fusion Denial Spike Detected</div>
+              <div class="audit-desc">Cigna CPT 22612 denials increased from 41% → 68% over 14 days. ARB auto-raised risk score for all Cigna spinal claims. 94 pending claims rerouted proactively.</div>
+              <div class="audit-meta">2024-11-01 · Triggered by: outcome_pattern_shift · Confidence: 94%</div>
+            </div>
+          </div>
+          <div class="audit-row">
+            <div class="audit-icon" style="background:rgba(10,132,255,0.1);">📋</div>
+            <div class="audit-content">
+              <div class="audit-title">Aetna Policy Update — MP.016 Rev 4</div>
+              <div class="audit-desc">Aetna updated spinal fusion coverage policy. ARB ingested update, recalibrated 3 routing models. Net approval probability for 22612 improved from 78% → 84%.</div>
+              <div class="audit-meta">2024-10-28 · Source: payer_policy_feed_aetna · 0 human review required</div>
+            </div>
+          </div>
+          <div class="audit-row">
+            <div class="audit-icon" style="background:rgba(191,90,242,0.1);">✉️</div>
+            <div class="audit-content">
+              <div class="audit-title">Appeal Strategy Updated — Spinal Fusion</div>
+              <div class="audit-desc">After analyzing 328 appeal outcomes: citing "12-week conservative treatment failure" improved win rate by 22pp vs. prior template. ARB auto-updated all appeal drafts.</div>
+              <div class="audit-meta">2024-10-22 · Strategy: appeal_nlp_v3 · Win rate delta: +22pp</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model cards -->
+      <div class="flex flex-col gap-16">
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="model-name">ARB-Denial Predictor</div>
+              <div class="model-version">v2.4 · Retrained 3h ago</div>
+            </div>
+            <div class="badge badge-green">Active</div>
+          </div>
+          <div class="accuracy-row"><span class="accuracy-label">Overall accuracy</span><div class="accuracy-bar"><div class="accuracy-fill" style="width:91%;background:var(--green);"></div></div><span class="accuracy-val">91.3%</span></div>
+          <div class="accuracy-row"><span class="accuracy-label">Cigna patterns</span><div class="accuracy-bar"><div class="accuracy-fill" style="width:94%;background:var(--green);"></div></div><span class="accuracy-val">94.1%</span></div>
+          <div class="accuracy-row"><span class="accuracy-label">Medicare Adv.</span><div class="accuracy-bar"><div class="accuracy-fill" style="width:87%;background:var(--blue);"></div></div><span class="accuracy-val">87.4%</span></div>
+        </div>
+
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="model-name">ARB-Auth Predictor</div>
+              <div class="model-version">v1.9 · Retrained 6h ago</div>
+            </div>
+            <div class="badge badge-green">Active</div>
+          </div>
+          <div class="accuracy-row"><span class="accuracy-label">Auth approval pred.</span><div class="accuracy-bar"><div class="accuracy-fill" style="width:88%;background:var(--green);"></div></div><span class="accuracy-val">88.2%</span></div>
+          <div class="accuracy-row"><span class="accuracy-label">Prior auth timing</span><div class="accuracy-bar"><div class="accuracy-fill" style="width:81%;background:var(--blue);"></div></div><span class="accuracy-val">81.5%</span></div>
+        </div>
+
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="model-name">ARB-Appeal Strategist</div>
+              <div class="model-version">v1.4 · Updated 22h ago</div>
+            </div>
+            <div class="badge badge-green">Active</div>
+          </div>
+          <div class="accuracy-row"><span class="accuracy-label">Level 1 win rate</span><div class="accuracy-bar"><div class="accuracy-fill" style="width:73%;background:var(--purple);"></div></div><span class="accuracy-val">73.4%</span></div>
+          <div class="accuracy-row"><span class="accuracy-label">Level 2 win rate</span><div class="accuracy-bar"><div class="accuracy-fill" style="width:61%;background:var(--blue);"></div></div><span class="accuracy-val">61.0%</span></div>
+          <div style="margin-top:12px;font-size:12px;color:var(--ink-4);background:var(--surface-2);padding:8px 10px;border-radius:8px;line-height:1.5;">
+            <strong style="color:var(--ink);">Moat signal:</strong> Each appeal outcome trains the next draft. Competitors using static templates see 35–40% win rates.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <button class="btn btn-secondary" onclick="goTo(5)"><i class="fas fa-arrow-left"></i> Back</button>
+    <span class="nav-context">Step 6 of 6 — The Learning Brain</span>
+    <button class="btn btn-primary" onclick="goTo(0)"><i class="fas fa-home"></i> Back to Overview</button>
+  </div>
+</div>
+
+<script>
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('s' + n);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo(0,0);
+  }
+}
+</script>
+</body>
+</html>
